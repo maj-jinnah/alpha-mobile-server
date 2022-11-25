@@ -21,7 +21,7 @@ async function run() {
         const usersCollection = client.db('alphaMobile').collection('users')
         const brandCollection = client.db('alphaMobile').collection('brand')
 
-        //save user and generate jwt token
+        //save user to mongoDB and generate jwt token
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email
             const user = req.body
@@ -39,7 +39,7 @@ async function run() {
             res.send({ result, token })
         })
 
-        //get brand data 
+        //get brands data 
         app.get('/brand', async (req, res) => {
             const query = {};
             const brand = await brandCollection.find(query).toArray();
