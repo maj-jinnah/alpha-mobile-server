@@ -19,6 +19,7 @@ async function run() {
     try {
         const phonesCollection = client.db('alphaMobile').collection('phones')
         const usersCollection = client.db('alphaMobile').collection('users')
+        const brandCollection = client.db('alphaMobile').collection('brand')
 
         //save user and generate jwt token
         app.put('/user/:email', async (req, res) => {
@@ -30,20 +31,28 @@ async function run() {
                 $set: user,
             }
             const result = await usersCollection.updateOne(filter, updateDoc, option)
-            console.log(result);
+            // console.log(result);
 
             const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
                 expiresIn: '1d',
             })
             console.log(token)
-            res.send({ result, token })
+            // res.send({ result, token })
         })
 
+        //get brand data 
+        app.get('/brand', async (req, res) => {
+            const query = {};
+            const brand = await brandCollection.find(query).toArray();
+            res.send(brand);
+        })
+
+        
     }
+
     finally {
 
     }
-
 }
 run().catch(console.log)
 
