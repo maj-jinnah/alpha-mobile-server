@@ -32,12 +32,11 @@ async function run() {
             }
             const result = await usersCollection.updateOne(filter, updateDoc, option)
             // console.log(result);
-
             const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
                 expiresIn: '1d',
             })
             console.log(token)
-            // res.send({ result, token })
+            res.send({ result, token })
         })
 
         //get brand data 
@@ -46,8 +45,15 @@ async function run() {
             const brand = await brandCollection.find(query).toArray();
             res.send(brand);
         })
+        //get phone under brand
+        app.get('/brand/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { category_id: id };
+            const result = await phonesCollection.find(filter).toArray()
+            res.send(result)
+        })
 
-        
+
     }
 
     finally {
