@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
-// const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const port = process.env.PORT || 5000;
 
@@ -20,6 +20,24 @@ async function run() {
         const phonesCollection = client.db('alphaMobile').collection('phones')
         const usersCollection = client.db('alphaMobile').collection('users')
 
+        //save user and generate jwt token
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email
+            const user = req.body
+            const filter = { email: email }
+            const option = { upsert: true }
+            const updateDoc = {
+                $set: user,
+            }
+            const result = await usersCollection.updateOne(filter, updateDoc, option)
+            console.log(result);
+
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
+                expiresIn: '1d',
+            })
+            console.log(token)
+            res.send({ result, token })
+        })
 
     }
     finally {
