@@ -53,12 +53,20 @@ async function run() {
             const result = await phonesCollection.find(filter).toArray();
             res.send(result)
         })
+        //this will get a specific booking phone by user email
+        app.get('/bookings', async (req, res) => {
+            const email = req.query.email;
+            const query = { buyerEmail: email }
+            const result = await bookingsCollection.find(query).toArray()
+            res.send(result)
+        })
         //post all the booking phone in database
-        app.post('/bookings', async(req, res)=>{
+        app.post('/bookings', async (req, res) => {
             const bookingInfo = req.body;
             const result = await bookingsCollection.insertOne(bookingInfo);
             res.send(result);
         })
+
 
 
     }
