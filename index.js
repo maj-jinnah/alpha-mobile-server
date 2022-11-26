@@ -17,27 +17,28 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
 
     try {
-        const phonesCollection = client.db('alphaMobile').collection('phones')
-        const usersCollection = client.db('alphaMobile').collection('users')
         const brandCollection = client.db('alphaMobile').collection('brand')
+        const phonesCollection = client.db('alphaMobile').collection('phones')
+        const bookingsCollection = client.db('alphaMobile').collection('bookings')
+        const usersCollection = client.db('alphaMobile').collection('users')
 
         //save user to mongoDB and generate jwt token
-        app.put('/user/:email', async (req, res) => {
-            const email = req.params.email
-            const user = req.body
-            const filter = { email: email }
-            const option = { upsert: true }
-            const updateDoc = {
-                $set: user,
-            }
-            const result = await usersCollection.updateOne(filter, updateDoc, option)
-            // console.log(result);
-            const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
-                expiresIn: '1d',
-            })
-            console.log(token)
-            res.send({ result, token })
-        })
+        // app.put('/user/:email', async (req, res) => {
+        //     const email = req.params.email
+        //     const user = req.body
+        //     const filter = { email: email }
+        //     const option = { upsert: true }
+        //     const updateDoc = {
+        //         $set: user,
+        //     }
+        //     const result = await usersCollection.updateOne(filter, updateDoc, option)
+
+        //     const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
+        //         expiresIn: '1d',
+        //     })
+        //     console.log(token)
+        //     res.send({ result, token })
+        // })
 
         //get brands data 
         app.get('/brand', async (req, res) => {
@@ -49,8 +50,14 @@ async function run() {
         app.get('/brand/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { category_id: id };
-            const result = await phonesCollection.find(filter).toArray()
+            const result = await phonesCollection.find(filter).toArray();
             res.send(result)
+        })
+        //post all the booking phone in database
+        app.post('/bookings', async(req, res)=>{
+            const bookingInfo = req.body;
+            const result = await bookingsCollection.insertOne(bookingInfo);
+            res.send(result);
         })
 
 
