@@ -55,7 +55,7 @@ async function run() {
             res.send(result)
         })
 
-        //this will get a specific booking phone for user email  (my order)
+        //this will get a specific booking phone for user email  (my order) (user role)
         app.get('/bookings', verifyJWT, async (req, res) => {
             const email = req.query.email;
 
@@ -88,18 +88,32 @@ async function run() {
             res.status(403).send({ accessToken: "" });
         })
 
-        //save user in data vase
+        //save user in data base (when login , signup, and social log in)  public
         app.post('/users', async (req, res) => {
             const user = req.body;
             const result = await usersCollection.insertOne(user);
             res.send(result);
         })
 
-        //this will get all sellers
-        app.get('/allsellers', async(req, res) =>{
-            const query = { userRole : 'Seller'};
+        //this will get all sellers (all seller page) (admin role)
+        app.get('/allsellers', async (req, res) => {
+            const query = { userRole: 'Seller' };
             const result = await usersCollection.find(query).toArray()
             res.send(result)
+        })
+
+        //this will verify the seller (all seller page) (admin role)
+        app.put('/allsellers/verify', async (req, res) => {
+            const email = req.query.email;
+            const query = { userEmail: email };
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    verified: true
+                }
+            }
+            const result = await usersCollection.updateOne(query, updatedDoc, options);
+            res.send(result);
         })
 
 
