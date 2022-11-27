@@ -104,7 +104,15 @@ async function run() {
         })
 
         //this will get all sellers (all seller page) (admin role)
-        app.get('/allsellers', async (req, res) => {
+        app.get('/allsellers', verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            const filter = { userEmail: decodedEmail };
+            const user = await usersCollection.findOne(filter);
+            if (user?.userRole !== "Admin") {
+                res.status(403).send({ message: "Forbidden access" })
+            }
+
+            const email = req.query.email;
             const query = { userRole: 'Seller' };
             const result = await usersCollection.find(query).toArray()
             res.send(result)
@@ -129,6 +137,22 @@ async function run() {
             }
             const result = await usersCollection.updateOne(query, updatedDoc, options);
             res.send(result);
+        })
+
+        //this will delete the user
+        app.delete('/users', verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            const filter = { userEmail: decodedEmail };
+            const user = await usersCollection.findOne(filter);
+            if (user?.userRole !== "Admin") {
+                res.status(403).send({ message: "Forbidden access" })
+            }
+
+            const email = req.query.email;
+            const query = { userEmail: email };
+            const result = await usersCollection.deleteOne(query);
+            res.send(result)
+
         })
 
 
