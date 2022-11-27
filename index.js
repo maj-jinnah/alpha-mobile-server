@@ -95,6 +95,14 @@ async function run() {
             res.send(result);
         })
 
+        //check is the person is admin or not
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { userEmail: email };
+            const user = await usersCollection.findOne(query);
+            res.send({ isAdmin: user.userRole === 'Admin' });
+        })
+
         //this will get all sellers (all seller page) (admin role)
         app.get('/allsellers', async (req, res) => {
             const query = { userRole: 'Seller' };
@@ -102,8 +110,15 @@ async function run() {
             res.send(result)
         })
 
-        //this will verify the seller (all seller page) (admin role)
-        app.put('/allsellers/verify', async (req, res) => {
+        //this will verify the seller (all seller page) (admin role)  
+        app.put('/allsellers/verify', verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            const filter = { userEmail: decodedEmail };
+            const user = await usersCollection.findOne(filter);
+            if (user?.userRole !== "Admin") {
+                res.status(403).send({ message: "Forbidden access" })
+            }
+
             const email = req.query.email;
             const query = { userEmail: email };
             const options = { upsert: true }
