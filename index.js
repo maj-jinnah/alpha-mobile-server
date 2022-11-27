@@ -103,6 +103,21 @@ async function run() {
             res.send({ isAdmin: user.userRole === 'Admin' });
         })
 
+        //this will get all buyers (all seller page) (admin role)
+        app.get('/allbuyers', verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            const filter = { userEmail: decodedEmail };
+            const user = await usersCollection.findOne(filter);
+            if (user?.userRole !== "Admin") {
+                res.status(403).send({ message: "Forbidden access" })
+            }
+
+            const email = req.query.email;
+            const query = { userRole: 'Buyer' };
+            const result = await usersCollection.find(query).toArray()
+            res.send(result)
+        })
+
         //this will get all sellers (all seller page) (admin role)
         app.get('/allsellers', verifyJWT, async (req, res) => {
             const decodedEmail = req.decoded.email;
