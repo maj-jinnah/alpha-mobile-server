@@ -14,6 +14,24 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.ea93pzh.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+//varify a user 
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send('Unauthorized access');
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: 'Forbidden access' })
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
+
+
+
 async function run() {
 
     try {
@@ -37,9 +55,15 @@ async function run() {
             res.send(result)
         })
 
-        //this will get a specific booking phone by user email
-        app.get('/bookings', async (req, res) => {
+        //this will get a specific booking phone for user email  (my order)
+        app.get('/bookings', verifyJWT, async (req, res) => {
             const email = req.query.email;
+
+            const decodedEmail = req.decoded.email;
+            if (email !== decodedEmail) {
+                return res.status(403).send({ message: 'Forbidden' });
+            }
+
             const query = { buyerEmail: email }
             const result = await bookingsCollection.find(query).toArray()
             res.send(result)
@@ -50,6 +74,18 @@ async function run() {
             const bookingInfo = req.body;
             const result = await bookingsCollection.insertOne(bookingInfo);
             res.send(result);
+        })
+
+        //create token and send to the uer if the user is available in data base
+        app.get('/jwt', async (req, res) => {
+            const email = req.query.email;
+            const query = { userEmail: email }
+            const user = await usersCollection.findOne(query);
+            if (user) {
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1d' });
+                return res.send({ accessToken: token });
+            }
+            res.status(403).send({ accessToken: "" });
         })
 
         //save user in data vase
