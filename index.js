@@ -14,7 +14,7 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.ea93pzh.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-//varify a user 
+//verify a user 
 function verifyJWT(req, res, next) {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
@@ -93,6 +93,13 @@ async function run() {
             const user = req.body;
             const result = await usersCollection.insertOne(user);
             res.send(result);
+        })
+
+        //this will get all sellers
+        app.get('/allsellers', async(req, res) =>{
+            const query = { userRole : 'Seller'};
+            const result = await usersCollection.find(query).toArray()
+            res.send(result)
         })
 
 
