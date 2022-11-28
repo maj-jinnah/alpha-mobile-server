@@ -40,42 +40,6 @@ async function run() {
         const bookingsCollection = client.db('alphaMobile').collection('bookings')
         const usersCollection = client.db('alphaMobile').collection('users')
 
-        //get brands data 
-        app.get('/brand', async (req, res) => {
-            const query = {};
-            const brand = await brandCollection.find(query).toArray();
-            res.send(brand);
-        })
-
-        //get phone under brand
-        app.get('/brand/:id', async (req, res) => {
-            const id = req.params.id;
-            const filter = { category_id: id };
-            const result = await phonesCollection.find(filter).toArray();
-            res.send(result)
-        })
-
-        //this will get a specific booking phone for user email  (my order) (user role)
-        app.get('/bookings', verifyJWT, async (req, res) => {
-            const email = req.query.email;
-
-            const decodedEmail = req.decoded.email;
-            if (email !== decodedEmail) {
-                return res.status(403).send({ message: 'Forbidden' });
-            }
-
-            const query = { buyerEmail: email }
-            const result = await bookingsCollection.find(query).toArray()
-            res.send(result)
-        })
-
-        //post all the booking phone in database
-        app.post('/bookings', async (req, res) => {
-            const bookingInfo = req.body;
-            const result = await bookingsCollection.insertOne(bookingInfo);
-            res.send(result);
-        })
-
         //create token and send to the uer if the user is available in data base
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
@@ -95,7 +59,59 @@ async function run() {
             res.send(result);
         })
 
-        //check is the person is admin or not
+        //get brands data 
+        app.get('/brand', async (req, res) => {
+            const query = {};
+            const brand = await brandCollection.find(query).toArray();
+            res.send(brand);
+        })
+
+        //get phone under brand
+        app.get('/brand/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { category_id: id };
+            const result = await phonesCollection.find(filter).toArray();
+            res.send(result)
+        })
+
+        //this will get a specific booking phone for user email  (my order) (user role)
+        app.get('/bookings', verifyJWT, async (req, res) => {
+            const email = req.query.email;
+            const decodedEmail = req.decoded.email;
+            if (email !== decodedEmail) {
+                return res.status(403).send({ message: 'Forbidden' });
+            }
+
+            const query = { buyerEmail: email }
+            const result = await bookingsCollection.find(query).toArray()
+            res.send(result)
+        })
+
+        //post all the booking phone in database
+        app.post('/bookings', async (req, res) => {
+            const bookingInfo = req.body;
+            const result = await bookingsCollection.insertOne(bookingInfo);
+            res.send(result);
+        })
+
+        //add phones to the data base (add a product page ) (seller role)
+        app.post('/products', verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            const filter = { userEmail: decodedEmail };
+            const user = await usersCollection.findOne(filter);
+            if (user?.userRole !== "Seller") {
+                res.status(403).send({ message: "Forbidden access" })
+            }
+
+            const phoneInfo = req.body;
+            const result = await phonesCollection.insertOne(phoneInfo)
+            res.send(result)
+        })
+
+
+
+
+        //check is the person is admin or not (isAdmin Hooks)
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
             const query = { userEmail: email };
