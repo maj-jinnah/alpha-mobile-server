@@ -67,12 +67,24 @@ async function run() {
             res.send(brand);
         })
 
-        //get phone under brand
+        //get phone details under brand
         app.get('/brand/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { category_id: id };
             const result = await phonesCollection.find(filter).toArray();
             res.send(result)
+        })
+
+
+
+
+
+        //check is the person is buyer or not (isbuyer Hooks)
+        app.get('/users/buyer/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { userEmail: email };
+            const user = await usersCollection.findOne(query);
+            res.send({ isBuyer: user.userRole === 'Buyer' });
         })
 
         //this will get a specific booking phone for user email  (my order) (user role) 
@@ -87,6 +99,18 @@ async function run() {
             const result = await bookingsCollection.find(query).toArray()
             res.send(result)
         })
+        // app.get('/bookings', verifyJWT, async (req, res) => {
+        //     const decodedEmail = req.decoded.email;
+        //     const filter = { userEmail: decodedEmail };
+        //     const user = await usersCollection.findOne(filter);
+        //     if (user?.userRole !== "Seller") {
+        //         res.status(403).send({ message: "Forbidden access" })
+        //     }
+
+        //     const phoneInfo = req.body;
+        //     const result = await phonesCollection.insertOne(phoneInfo)
+        //     res.send(result)
+        // })
 
         //post all the booking phone in database
         app.post('/bookings', async (req, res) => {
@@ -98,6 +122,16 @@ async function run() {
 
         //                             seller role start from here
 
+
+
+
+        //check is the person is seller or not (isseller Hooks)
+        app.get('/users/seller/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { userEmail: email };
+            const user = await usersCollection.findOne(query);
+            res.send({ isSeller: user.userRole === 'Seller' });
+        })
 
 
         //add phones to the data base              (add a product page )         (seller role)
@@ -244,7 +278,7 @@ async function run() {
 
 
         // get advertise item 
-        app.get('/myadvertise', async(req, res)=>{
+        app.get('/myadvertise', async (req, res) => {
             const query = {}
             const result = await advertisesCollection.find(query).toArray();
             res.send(result);
