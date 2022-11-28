@@ -124,19 +124,20 @@ async function run() {
         })
 
         //seller can delete his product (seller role)
-        // app.delete('/myproduct/:id', verifyJWT, async(req, res)=>{
-        //     const decodedEmail = req.decoded.email;
-        //     const filter = { userEmail: decodedEmail };
-        //     const user = await usersCollection.findOne(filter);
-        //     if (user?.userRole !== "Seller") {
-        //         res.status(403).send({ message: "Forbidden access" })
-        //     }
+        app.delete('/myproduct/:id', verifyJWT, async(req, res)=>{
+            const decodedEmail = req.decoded.email;
+            const filter = { userEmail: decodedEmail };
+            const user = await usersCollection.findOne(filter);
+            if (user?.userRole !== "Seller") {
+                res.status(403).send({ message: "Forbidden access" })
+            }
 
-        //     const id = req.params.id;
-        //     const query = { _id : ObjectId(id)};
-        //     const result = await phonesCollection.deleteOne(query);
-        //     res.send(result)
-        // })
+            const id = req.params.id;
+            const query = { _id : ObjectId(id)};
+            console.log(id);
+            const result = await phonesCollection.deleteOne(query);
+            res.send(result)
+        })
 
         //check is the person is admin or not (isAdmin Hooks)
         app.get('/users/admin/:email', async (req, res) => {
