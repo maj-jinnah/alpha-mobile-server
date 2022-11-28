@@ -243,6 +243,14 @@ async function run() {
         })
 
 
+        // get advertise item 
+        app.get('/myadvertise', async(req, res)=>{
+            const query = {}
+            const result = await advertisesCollection.find(query).toArray();
+            res.send(result);
+        })
+
+
 
     }
     finally {
