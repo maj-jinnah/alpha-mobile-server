@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const port = process.env.PORT || 5000;
@@ -74,7 +74,7 @@ async function run() {
             res.send(result)
         })
 
-        //this will get a specific booking phone for user email  (my order) (user role)
+        //this will get a specific booking phone for user email  (my order) (user role) 
         app.get('/bookings', verifyJWT, async (req, res) => {
             const email = req.query.email;
             const decodedEmail = req.decoded.email;
@@ -108,8 +108,35 @@ async function run() {
             res.send(result)
         })
 
+        // the seller add a product (seller role)
+        app.get('/myproduct', verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            const filter = { userEmail: decodedEmail };
+            const user = await usersCollection.findOne(filter);
+            if (user?.userRole !== "Seller") {
+                res.status(403).send({ message: "Forbidden access" })
+            }
 
+            const emil = req.query.email;
+            const query = { sellerMail: emil }
+            const result = await phonesCollection.find(query).toArray();
+            res.send(result);
+        })
 
+        //seller can delete his product (seller role)
+        // app.delete('/myproduct/:id', verifyJWT, async(req, res)=>{
+        //     const decodedEmail = req.decoded.email;
+        //     const filter = { userEmail: decodedEmail };
+        //     const user = await usersCollection.findOne(filter);
+        //     if (user?.userRole !== "Seller") {
+        //         res.status(403).send({ message: "Forbidden access" })
+        //     }
+
+        //     const id = req.params.id;
+        //     const query = { _id : ObjectId(id)};
+        //     const result = await phonesCollection.deleteOne(query);
+        //     res.send(result)
+        // })
 
         //check is the person is admin or not (isAdmin Hooks)
         app.get('/users/admin/:email', async (req, res) => {
