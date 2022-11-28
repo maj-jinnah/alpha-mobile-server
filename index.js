@@ -39,6 +39,7 @@ async function run() {
         const phonesCollection = client.db('alphaMobile').collection('phones')
         const bookingsCollection = client.db('alphaMobile').collection('bookings')
         const usersCollection = client.db('alphaMobile').collection('users')
+        const advertisesCollection = client.db('alphaMobile').collection('advertise')
 
         //create token and send to the uer if the user is available in data base
         app.get('/jwt', async (req, res) => {
@@ -94,7 +95,12 @@ async function run() {
             res.send(result);
         })
 
-        //add phones to the data base (add a product page ) (seller role)
+
+        //                             seller role start from here
+
+
+
+        //add phones to the data base              (add a product page )         (seller role)
         app.post('/products', verifyJWT, async (req, res) => {
             const decodedEmail = req.decoded.email;
             const filter = { userEmail: decodedEmail };
@@ -108,7 +114,7 @@ async function run() {
             res.send(result)
         })
 
-        // the seller add a product (seller role)
+        // the seller add a product             (my product page)                (seller role)
         app.get('/myproduct', verifyJWT, async (req, res) => {
             const decodedEmail = req.decoded.email;
             const filter = { userEmail: decodedEmail };
@@ -123,8 +129,8 @@ async function run() {
             res.send(result);
         })
 
-        //seller can delete his product (seller role)
-        app.delete('/myproduct/:id', verifyJWT, async(req, res)=>{
+        //seller can delete his product           (my product page)                (seller role)
+        app.delete('/myproduct/:id', verifyJWT, async (req, res) => {
             const decodedEmail = req.decoded.email;
             const filter = { userEmail: decodedEmail };
             const user = await usersCollection.findOne(filter);
@@ -133,11 +139,33 @@ async function run() {
             }
 
             const id = req.params.id;
-            const query = { _id : ObjectId(id)};
+            const query = { _id: ObjectId(id) };
             console.log(id);
             const result = await phonesCollection.deleteOne(query);
             res.send(result)
         })
+
+        //thi sis the Advertise post req       (my product page)                  (seller role)
+        app.post('/advertise', verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            const filter = { userEmail: decodedEmail };
+            const user = await usersCollection.findOne(filter);
+            if (user?.userRole !== "Seller") {
+                res.status(403).send({ message: "Forbidden access" })
+            }
+
+            const phoneInfo = req.body;
+            const result = await advertisesCollection.insertOne(phoneInfo);
+            res.send(result)
+
+        })
+
+
+
+        //                              Admin role start from here
+
+
+
 
         //check is the person is admin or not (isAdmin Hooks)
         app.get('/users/admin/:email', async (req, res) => {
@@ -198,7 +226,7 @@ async function run() {
             res.send(result);
         })
 
-        //this will delete the user
+        //this will delete the user   (admin role)
         app.delete('/users', verifyJWT, async (req, res) => {
             const decodedEmail = req.decoded.email;
             const filter = { userEmail: decodedEmail };
